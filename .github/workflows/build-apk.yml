@@ -1,0 +1,48 @@
+name: Compilar Emilio León AI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - principal
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Configurar Android
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar SDK Android
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Descomprimir proyecto
+        run: |
+          unzip -q Emilio_Leon_AI_GitHub_Actions.zip -d proyecto
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Compilar APK
+        working-directory: proyecto/emilio_leon_ai
+        run: gradle --no-daemon assembleDebug
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Emilio-Leon-AI-APK
+          path: proyecto/emilio_leon_ai/app/build/outputs/apk/debug/app-debug.apk
